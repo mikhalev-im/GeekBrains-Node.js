@@ -1,7 +1,7 @@
 var readline = require('readline');
 var fs = require('fs');
 
-var logfile = process.argv[3];
+var logfile = process.argv[2] || 'log.txt';
 
 console.log('Hello!\nTHis is BlackJack!');
 playBlackJack(logfile);
@@ -14,6 +14,7 @@ function playBlackJack(logfile) {
   startGame();
 
   function startGame() {
+    fs.appendFileSync(logfile, 'New game\n');
 
     rl = readline.createInterface({
       input: process.stdin,
@@ -26,10 +27,15 @@ function playBlackJack(logfile) {
   function gameRound (userCards) {
     
     var userSum = getSum(userCards);
+
+    fs.appendFileSync(logfile, 'User cards: ' + userCards + '\n');
+    fs.appendFileSync(logfile, 'User sum = ' + userSum + '\n');
+    
     console.log('Your cards: ' + userCards + ". Sum: " + userSum);
     
     if (userSum > 21) {
      console.log('You lose!');
+     fs.appendFileSync(logfile, 'Dealer win\nEnd of the game\n');
      rl.close();
      return;
     }
@@ -38,6 +44,7 @@ function playBlackJack(logfile) {
     rl.question('Do you want one more card? [y] or [n]: ', function(answer) {
       if (answer === 'y') {
         userCards.push(getCard(cards));
+        fs.appendFileSync(logfile, 'User gets one more card\n');
         gameRound(userCards);
       }
       else if (answer === 'n') {
@@ -84,28 +91,34 @@ function playBlackJack(logfile) {
 
   function getResult (userSum) {
     var dealerCards = [getCard(cards), getCard(cards)], dealerSum = getSum(dealerCards);
+    
+    fs.appendFileSync(logfile, 'Dealer cards: ' + dealerCards + '\n');
+    fs.appendFileSync(logfile, 'Dealer sum = ' + dealerSum + '\n');
+
     while (dealerSum < 17) {
+      fs.appendFileSync(logfile, 'Dealer needs one more card\n')
       dealerCards.push(getCard(cards));
+      fs.appendFileSync(logfile, 'Dealer cards: ' + dealerCards + '\n');
       dealerSum = getSum(dealerCards);
+      fs.appendFileSync(logfile, 'Dealer sum = ' + dealerSum + '\n');
     }
     
     console.log('Dealer cards: ' + dealerCards + '. Sum: ' + dealerSum);
     
     if (userSum > dealerSum || dealerSum > 21) {
       console.log('You win!');
+      fs.appendFileSync(logfile, 'User wins!\nEnd of the game\n');
       rl.close();
     }
     else if (userSum < dealerSum) {
       console.log('You lose!');
+      fs.appendFileSync(logfile, 'Dealer wins!\nEnd of the game\n');
       rl.close();
     }
     else {
       console.log('Tie!');
+      fs.appendFileSync(logfile, 'Tie!\nEnd of the game\n');
       rl.close();
     }
   }
-
-
-
-
 }
